@@ -11,21 +11,16 @@ class Rotor(
 
     val isTurnoverPos get() = notches.contains(((state + 1 + 52 - 'A') % 26 + 'A'.toInt()).toChar())
 
-    private var _wiring: CharArray = wire.toCharArray()
+    private var wiring: CharArray = wire.toCharArray()
     private var rWiring = CharArray(26)
 
-    var wiring
-        get() = _wiring
-        set(value) {
-            _wiring = value
-            value.copyInto(rWiring, 0, 0, value.size)
-            value.forEachIndexed { index, c -> rWiring[c - 'A'] = 'A' + index }
-        }
+    init {
+        wire.toCharArray().copyInto(rWiring)
+        wire.toCharArray().forEachIndexed { index, c -> rWiring[c - 'A'] = 'A' + index }
+    }
 
     var state: Char = stated
-        set(value) {
-            field = ('A' + (value - 'A' + 52) % 26)
-        }
+        set(value) = run { field = ('A' + (value - 'A' + 52) % 26) }
 
     fun stateUp() = run { state += 1 }
     fun stateDown() = run { state -= 1 }
@@ -34,7 +29,7 @@ class Rotor(
         val shift = state - 'A'
         var index = (key - 'A' + 52) % 26;
         index = (index + shift + 52) % 26; // Actual connector hit
-        val letter = _wiring[index]
+        val letter = wiring[index]
         return ('A' + (letter - 'A' + 52 - shift) % 26)
     }
 

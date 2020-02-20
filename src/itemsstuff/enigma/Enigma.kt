@@ -8,6 +8,14 @@ class Enigma(
     key: String = "AAA",
     plugs: String = ""
 ) {
+    constructor(
+        reflector: PreMadeReflector,
+        rotor1: PreMadeRotor,
+        rotor2: PreMadeRotor,
+        rotor3: PreMadeRotor,
+        key: String = "AAA",
+        plugs: String = ""
+    ) : this(reflector.getReflector(), rotor1.getRotor(), rotor2.getRotor(), rotor3.getRotor(), key, plugs)
 
     private val transTab = mutableMapOf<Char, Char>()
 
@@ -28,40 +36,25 @@ class Enigma(
 
     fun encode(plainTextIn: String): String {
         var ciphering = ""
-        var plainText = plainTextIn.toUpperCase()
-        var plainTextTemp = ""
-
-        plainText.forEach { plainTextTemp += if(transTab.containsKey(it)) transTab[it] else it }
-        plainText = plainTextTemp
+        val plainText: String = plainTextIn.toUpperCase().map { transTab.getOrElse(it) { it } }.joinToString("")
         for (c in plainText) {
-            if (rotor2.isTurnoverPos) {
-                rotor2.notch()
-                rotor3.notch()
-            }
-
+            if (rotor2.isTurnoverPos) rotor2.notch().also { rotor3.notch() }
             if (rotor1.isTurnoverPos) rotor2.notch()
-
             rotor1.notch()
-
             if (!c.isLetter()) {
                 ciphering += c
                 continue
             }
-
-            var t = rotor1.encodeRight(c)
-            t = rotor2.encodeRight(t)
-            t = rotor3.encodeRight(t)
-            t = reflector.encipher(t)
-            t = rotor3.encodeLeft(t)
-            t = rotor2.encodeLeft(t)
-            t = rotor1.encodeLeft(t)
-            ciphering += t
+            ciphering += c
+                .let { rotor1.encodeRight(it) }
+                .let { rotor2.encodeRight(it) }
+                .let { rotor3.encodeRight(it) }
+                .let { reflector.encipher(it) }
+                .let { rotor3.encodeLeft(it) }
+                .let { rotor2.encodeLeft(it) }
+                .let { rotor1.encodeLeft(it) }
         }
-
-        var cipheringTmp = ""
-        ciphering.forEach { cipheringTmp += if(transTab.containsKey(it)) transTab[it] else it }
-        return cipheringTmp
-
+        return ciphering.map { transTab.getOrElse(it) { it } }.joinToString("")
     }
 
     override fun toString(): String =

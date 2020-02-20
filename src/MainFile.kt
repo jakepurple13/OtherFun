@@ -6,8 +6,6 @@ import itemsstuff.cards.Deck
 import itemsstuff.cards.Suit
 import itemsstuff.cards.YugiohCard
 import itemsstuff.checkers.CheckersBoard
-import itemsstuff.chess.Board
-import itemsstuff.chess.toFEN
 import itemsstuff.chess.*
 import itemsstuff.enigma.Enigma
 import itemsstuff.enigma.PreMadeReflector
@@ -18,7 +16,7 @@ import java.util.*
 import kotlin.random.Random
 import kotlin.random.nextInt
 import kotlin.time.ExperimentalTime
-import kotlin.time.measureTime
+
 
 fun setup() {
     Loged.UNIT_TESTING = true
@@ -45,21 +43,45 @@ fun main() = runBlocking {
 }
 
 fun enigmaTest() {
-    val message = "Hello world!";
-
-    val enigma = Enigma(
-        PreMadeReflector.A.getReflector(),
-        PreMadeRotor.I.getRotor(),
-        PreMadeRotor.II.getRotor(),
-        PreMadeRotor.III.getRotor(),
+    val message = "HELLO WORLD"
+    var enigma = Enigma(
+        PreMadeReflector.A,
+        PreMadeRotor.I,
+        PreMadeRotor.II,
+        PreMadeRotor.III,
         "ABC",
         "AV BS CG DL FU HZ IN KM OW RX"
     )
+    var encoded = enigma.encode(message)
+    enigma = Enigma(
+        PreMadeReflector.A,
+        PreMadeRotor.I,
+        PreMadeRotor.II,
+        PreMadeRotor.III,
+        "ABC",
+        "AV BS CG DL FU HZ IN KM OW RX"
+    )
+    encoded = enigma.encode(encoded)
+    println("$encoded is what you got.\n$message is the correct message.")
 
-    val encoded = enigma.encode(message)
+    enigmaTesting(
+        Enigma(
+            PreMadeReflector.A,
+            PreMadeRotor.I,
+            PreMadeRotor.II,
+            PreMadeRotor.III,
+            "ABC",
+            "AV BS CG DL FU HZ IN KM OW RX"
+        ) to "Hello world!" to "QGQOP VWOXN!"
+    )
+}
 
-    println(encoded)
-    println("Should get: QGQOP VWOXN!")
+infix fun Pair<Enigma, String>.to(s: String) = Triple(first, second, s)
+
+fun enigmaTesting(vararg pairs: Triple<Enigma, String, String>) = pairs.forEach {
+    val encoded = it.first.encode(it.second)
+    println("$encoded is what you got.\n${it.third} is the correct message.")
+    println("-".repeat(20))
 }
 
 fun operateTest() {
